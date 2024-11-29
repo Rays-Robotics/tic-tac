@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #111827;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 2rem;
+            animation: superBounce 1s infinite;
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: #ef4444;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            padding: 0 1rem;
+        }
+
+        .floating-text {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: #3b82f6;
+            margin-top: 2rem;
+            animation: dramaticFade 2s infinite;
+        }
+
+        .game-container {
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .status {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: #3b82f6;
+            padding: 0 1rem;
+        }
+
+        .dramatic-text {
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            color: #ef4444;
+            margin-top: 0.5rem;
+            animation: dramaticFade 2s infinite;
+            padding: 0 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: min(4vw, 1rem);
+            margin: 2rem auto;
+            width: min(90vw, 400px);
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #1f2937;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: clamp(2rem, 8vw, 4rem);
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell:hover:not([disabled]) {
+            transform: scale(1.1);
+            background: #374151;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        .cell:active:not([disabled]) {
+            transform: scale(0.95);
+        }
+
+        .cell[data-value="X"] {
+            color: #ef4444;
+        }
+
+        .cell[data-value="O"] {
+            color: #10b981;
+        }
+
+        .winner-announcement {
+            animation: winnerAnnouncement 0.8s ease-out;
+        }
+
+        .reset-button {
+            padding: clamp(0.8rem, 3vw, 1rem) clamp(1.5rem, 5vw, 2rem);
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-weight: bold;
+            background: #2563eb;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: dramaticEntrance 0.8s ease-out;
+            white-space: normal;
+            max-width: 90%;
+        }
+
+        .reset-button:hover {
+            transform: scale(1.1);
+            background: #1d4ed8;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        @keyframes superBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(min(-30px, -5vh)); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes dramaticFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        @keyframes dramaticEntrance {
+            0% { transform: scale(0) rotate(-540deg); opacity: 0; }
+            50% { transform: scale(1.5) rotate(-270deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes winnerAnnouncement {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .placed-symbol {
+            animation: dramaticEntrance 0.8s ease-out;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-height: 600px) {
+            .grid {
+                margin: 1rem auto;
+            }
+            
+            .status {
+                margin-bottom: 1rem;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .game-container {
+                transform: scale(1.2);
+            }
+        }
+
+        @media (min-width: 1800px) {
+            .game-container {
+                transform: scale(1.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Same HTML structure as before -->
+    <div id="intro-screen">
+        <div class="title">TIC TAC</div>
+        <div class="subtitle">THE HARDEST GAME EVER CREATED</div>
+        <div class="floating-text">ARE YOU READY FOR THE CHALLENGE?</div>
+    </div>
+
+    <div class="game-container" style="display: none;">
+        <div class="status"></div>
+        <div class="dramatic-text"></div>
+        <div class="grid">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+        </div>
+        <button class="reset-button" style="display: none;">EMBARK ON ANOTHER EPIC QUEST</button>
+    </div>
+
+    <!-- Same JavaScript as before -->
+    <script>
+        const dramaticPhrases = [
+            "DESTINY AWAITS...",
+            "THE FATE OF THE UNIVERSE HANGS IN BALANCE!",
+            "WHAT WILL YOU CHOOSE?!",
+            "EVERY MOVE COUNTS!!!"
+        ];
+
+        const dramaticWinPhrases = [
+            "ABSOLUTELY INCREDIBLE!",
+            "LEGENDARY VICTORY!",
+            "IMPOSSIBLE... THEY DID IT!",
+            "THE PROPHECY WAS TRUE!"
+        ];
+
+        const game = {
+            board: ['', '', '', ''],
+            currentPlayer: 'X',
+            winner: null,
+            moveCount: 0
+        };
+
+        function checkWinner(board) {
+            const winPatterns = [
+                [0, 1], [2, 3], // rows
+                [0, 2], [1, 3], // columns
+                [0, 3], [1, 2]  // diagonals
+            ];
+
+            for (let pattern of winPatterns) {
+                const [a, b] = pattern;
+                if (board[a] && board[a] === board[b]) {
+                    return board[a];
+                }
+            }
+
+            if (board.every(cell => cell !== '')) return 'draw';
+            return null;
+        }
+
+        function updateStatus() {
+            const status = document.querySelector('.status');
+            const dramaticText = document.querySelector('.dramatic-text');
+            const resetButton = document.querySelector('.reset-button');
+
+            if (game.winner) {
+                const randomWinPhrase = dramaticWinPhrases[Math.floor(Math.random() * dramaticWinPhrases.length)];
+                status.innerHTML = `
+                    <div class="winner-announcement">
+                        <div style="color: #fbbf24; font-size: clamp(1.8rem, 6vw, 2.5rem); margin-bottom: 1rem;">
+                            ${randomWinPhrase}
+                        </div>
+                        <div>
+                            ${game.winner === 'draw' ? 
+                                "AN EPIC STALEMATE!" : 
+                                `PLAYER ${game.winner} HAS ACHIEVED GREATNESS!`}
+                        </div>
+                    </div>
+                `;
+                dramaticText.textContent = '';
+                resetButton.style.display = 'inline-block';
+            } else {
+                status.textContent = `Player ${game.currentPlayer}'s Moment of Truth`;
+                dramaticText.textContent = dramaticPhrases[game.moveCount % dramaticPhrases.length];
+                resetButton.style.display = 'none';
+            }
+        }
+
+        function handleCellClick(event) {
+            const cell = event.target;
+            const index = cell.dataset.index;
+
+            if (game.winner || game.board[index]) return;
+
+            game.board[index] = game.currentPlayer;
+            cell.dataset.value = game.currentPlayer;
+            cell.innerHTML = `<span class="placed-symbol">${game.currentPlayer}</span>`;
+            
+            game.winner = checkWinner(game.board);
+            game.currentPlayer = game.currentPlayer === 'X' ? 'O' : 'X';
+            game.moveCount++;
+
+            updateStatus();
+        }
+
+        function resetGame() {
+            game.board = ['', '', '', ''];
+            game.currentPlayer = 'X';
+            game.winner = null;
+            game.moveCount = 0;
+
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+                cell.dataset.value = '';
+            });
+
+            updateStatus();
+        }
+
+        // Initialize game
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        document.querySelector('.reset-button').addEventListener('click', resetGame);
+
+        // Start game after intro
+        setTimeout(() => {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.querySelector('.game-container').style.display = 'block';
+            updateStatus();
+        }, 5000);
+    </script>
+</body>
+</html>
